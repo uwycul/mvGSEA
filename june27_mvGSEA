@@ -11,7 +11,7 @@ june27_mvGSEA <- function(y,X,v=NULL,conf=NULL)
     confounders_column <- pmatch(conf, dimnames(X)[[2]])} #find which columns are confounders
   newX <- c()
   if ( !is.null(confounders_column)){
-    newX <- X[,-confounders_column]} #updated X, taking the confounders out
+    newX <- x[,-confounders_column]} #updated X, taking the confounders out
 
   
   #----------perform glm depending on the confounders
@@ -36,11 +36,33 @@ june27_mvGSEA <- function(y,X,v=NULL,conf=NULL)
   
   #predict
   predict_model <- predict(model, data.frame(X), type = "response")
-  predict_model[predict_model<0.5] <- 0
-  predict_model[predict_model>=0.5] <- 1
-  predict_model
+predict_model_fit <- ifelse(predict_model > 0.5,1,0)
+
+
  
   #False discovery rate
-  
+  #false positive/test outcome positive
+false_pos <- predict_model-y
+false_pos_length <- length(false_pos[false_pos==1])
+test_outcome_pos <- length(y==1)
+fdr <- false_pos_length/test_outcome_pos
+
+#odds ratio
+predict_model_fit_ <- ifelse(predict_model_fit==1, "Yes", "No")
+data_predict <- factor(predict_model_fit_, levels = c("Yes", "No"))
+y_ <- ifelse(y==1, "Yes", "No")
+data_y_ <- factor(y_, levels = c("Yes", "No"))
+contingency_table <- table(data_predict, data_y_)
+contingency_table
+
+oddsr <- (contingency_table[1, 1] / contingency_table[2,1]) / (contingency_table[1,2] / contingency_table[2, 2])
+
+pred <- prediction(predict_model_fit, y)
+perf <- performance(pred, "tpr", "fpr")
+plot(perf)
+
+#return a list
+list(p.val, fdr, oddsr)
+
   
 }
