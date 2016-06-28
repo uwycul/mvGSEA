@@ -61,8 +61,8 @@ pred <- prediction(predict_model_fit, y)
 perf <- performance(pred, "tpr", "fpr")
 plot(perf)
 
-#return a list
-list(p.val, fdr, oddsr)
+#return a table
+data.frame(p.val, fdr, oddsr)
 
   
 }
