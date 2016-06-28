@@ -1,0 +1,46 @@
+june27_mvGSEA <- function(y,X,v=NULL,conf=NULL)
+{
+  
+   if(is.null(v)){
+    v<-  (dimnames(X)[[2]])
+  }
+
+ 
+ confounders_column <- c()
+ if( !is.null(conf)){ #if there ARE confounders
+    confounders_column <- pmatch(conf, dimnames(X)[[2]])} #find which columns are confounders
+  newX <- c()
+  if ( !is.null(confounders_column)){
+    newX <- X[,-confounders_column]} #updated X, taking the confounders out
+
+  
+  #----------perform glm depending on the confounders
+  if(is.null(conf)){
+  model <- edited_speedglm_L1(y~X)
+
+  }else{
+  model <- edited_speedglm_L1(y~newX*X[,confounders_column])
+
+  }
+  #------------using only the v's selected---get pval
+  selected_v_column <- c()
+  if(!is.null(v)){
+    selected_v_column <- pmatch(v, dimnames(X)[[2]])
+  }else{
+    selected_v_column <- v
+  }
+  
+  
+  wald <- aod::wald.test(b=coef(model), Sigma = vcov(model), Terms=selected_v_column)
+  p.val <- wald$result$chi2[3]
+  
+  #predict
+  predict_model <- predict(model, data.frame(X), type = "response")
+  predict_model[predict_model<0.5] <- 0
+  predict_model[predict_model>=0.5] <- 1
+  predict_model
+ 
+  #False discovery rate
+  
+  
+}
