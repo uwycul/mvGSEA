@@ -1,4 +1,4 @@
-#contains variety of functions necessary for the speedglm computation
+#contains collection of functions necessary for the speedglm computation
 
 ll.speedglm <- function(family,aic.model,nvar){
   switch(family,
@@ -87,7 +87,7 @@ cp <- function (X, w = NULL, row.chunk = NULL, sparse = FALSE)
 }
 
 control <- function (B, symmetric = TRUE, tol.values = 1e-07, tol.vectors = 1e-07, 
-          out.B = TRUE, method = c("eigen", "Cholesky")) 
+                     out.B = TRUE, method = c("eigen", "Cholesky")) 
 {
   method <- match.arg(method)
   if (!(method %in% c("eigen", "Cholesky"))) 
