@@ -1,3 +1,5 @@
+#uses the speedglm.wfit function, but slightly modified. unnecessary code is taken out
+
 edited_L1_speedglm.wfit <- function (y, X, intercept = TRUE, weights = NULL, row.chunk = NULL, start = NULL, etastart = NULL, mustart = NULL, 
           offset = NULL, acc = 1e-08, maxit = 25, k = 2, sparselim = 0.9, 
           camp = 0.01, eigendec = TRUE, tol.values = 1e-07, tol.vectors = 1e-07, 
