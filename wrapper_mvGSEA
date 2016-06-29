@@ -1,4 +1,4 @@
-#performs the mvGSEA function using each y column
+#performs the mvGSEA function using each ys column
 
 wrapper_mvGSEA <- function(ys,X, v=NULL, conf = NULL)
   {
@@ -13,6 +13,7 @@ wrapper_mvGSEA <- function(ys,X, v=NULL, conf = NULL)
   
   output <- apply(ys, 2, function(y) {mvGSEA(y, X, v=v, conf=conf)}) #this works, but it's not in parallel, and it doesn't return everything in a large table, it just returns everything separately
   output_table <- Reduce(rbind, output)
+  row.names(output_table) <- seq(1,ncol(ys))
   output_table
   
 }
