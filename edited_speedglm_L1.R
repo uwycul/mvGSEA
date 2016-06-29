@@ -1,12 +1,13 @@
-edited_speedglm_L1 <- function (formula, data, family = gaussian(), weights = NULL, 
+#uses the speedglm function, but edited so that unnecessary code is taken out
+
+edited_speedglm_L1 <- function (formula, data, family = binomial(), weights = NULL, 
                                 start = NULL, etastart = NULL, mustart = NULL, offset = NULL, 
                                 maxit = 25, k = 2, sparse = NULL, set.default = list(), trace = FALSE, 
                                 method = c("eigen", "Cholesky", "qr"), model = FALSE, y = FALSE, 
                                 fitted = FALSE, ...) 
 {
   data <- environment(formula)
-  family =
-  call <- match.call()
+    call <- match.call()
   target <- y
   M <- match.call(expand.dots = FALSE)
   m <- match(c("formula", "data", "subset"), names(M), 0L)
@@ -28,19 +29,19 @@ edited_speedglm_L1 <- function (formula, data, family = gaussian(), weights = NU
     warning("unknown names in set.default: ", paste(noNms, 
                                                     collapse = ", "))
   rval <- edited_L1_speedglm.wfit(y = y, X = X, family = family, weights = weights, 
-                        start = start, etastart = etastart, mustart = mustart, 
-                        offset = offset, intercept = intercept, row.chunk = set$row.chunk, 
-                        maxit = maxit, k = k, acc = set$acc, sparselim = set$sparselim, 
-                        camp = set$camp, eigendec = set$eigendec, tol.solve = set$tol.solve, 
-                        sparse = sparse, tol.values = set$tol.values, trace = trace, 
-                        tol.vectors = set$tol.vectors, method = set$method)
+                                  start = start, etastart = etastart, mustart = mustart, 
+                                  offset = offset, intercept = intercept, row.chunk = set$row.chunk, 
+                                  maxit = maxit, k = k, acc = set$acc, sparselim = set$sparselim, 
+                                  camp = set$camp, eigendec = set$eigendec, tol.solve = set$tol.solve, 
+                                  sparse = sparse, tol.values = set$tol.values, trace = trace, 
+                                  tol.vectors = set$tol.vectors, method = set$method)
   rval$terms <- tf
   rval$call <- call
   class(rval) <- c("speedglm", "speedlm")
   if (model) 
     rval$model <- M
   if (fitted) 
-    rval$linear.predictors <- predict.speedlm(rval, newdata = M)
+    rval$linear.predictors <- predict.edited_L1_speedglm_L1(rval, newdata = M)#-------here!!
   if (target) 
     rval$y <- y
   if ((rval$iter == maxit) & (!rval$convergence)) 
