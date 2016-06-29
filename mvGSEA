@@ -1,3 +1,7 @@
+#uses the edited_speed_glm_L1 and edited_L1_speedglm.wfit to perform a Wald Test and to predict the outcome
+#will return pval, false discovery rate, and odds ratio as a data frame
+
+
 mvGSEA <- function(y,X,v=NULL,conf=NULL)
 {
   if(is.null(v)){
