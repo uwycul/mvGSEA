@@ -1,6 +1,5 @@
 mvGSEA <- function(y,X,v=NULL,conf=NULL)
 {
-  
   if(is.null(v)){
     v<-  (dimnames(X)[[2]])
   }
@@ -16,10 +15,10 @@ mvGSEA <- function(y,X,v=NULL,conf=NULL)
   
   #----------perform glm depending on the confounders
   if(is.null(conf)){
-    model <- edited_speedglm_L1(y~X)
+    model <- edited_speedglm_L1(y~X, drop.unused.levels = FALSE)
     
   }else{
-    model <- edited_speedglm_L1(y~newX*X[,confounders_column])
+    model <- edited_speedglm_L1(y~newX*X[,confounders_column], drop.unused.levels=FALSE)
     
   }
   #------------using only the v's selected---get pval
