@@ -1,0 +1,19 @@
+#performs the mvGSEA function using each y column
+
+wrapper_mvGSEA <- function(ys,X, v=NULL, conf = NULL)
+  {
+
+
+  #cl <- makeCluster(mc <- getOption("cl.cores", 4))
+  #clusterExport(cl=cl, list("mvGSEA", x_L1))
+  
+  #parApply(cl,y_L1[,1:10], 2, function (y, X=X) {mvGSEA(y, X, v=NULL, conf=NULL)})
+  #tapply(y_L1[,1:10],rep(1:ncol(y_L1[,1:10]),each=nrow(y_L1[,1:10])),function(i)i)
+  #lapply(y_L1[,1:10], function (y) {mvGSEA(y, X, v=NULL, conf=NULL)})
+  
+  output <- apply(ys, 2, function(y) {mvGSEA(y, X, v=v, conf=conf)}) #this works, but it's not in parallel, and it doesn't return everything in a large table, it just returns everything separately
+  output_table <- Reduce(rbind, output)
+  output_table
+  
+}
+
