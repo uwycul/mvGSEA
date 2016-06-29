@@ -1,8 +1,7 @@
 #uses the edited_speed_glm_L1 and edited_L1_speedglm.wfit to perform a Wald Test and to predict the outcome
 #will return pval, false discovery rate, and odds ratio as a data frame
 
-
-mvGSEA <- function(y,X,v=NULL,conf=NULL)
+mvGSEA <- function(y,X,v=v,conf=conf)
 {
   if(is.null(v)){
     v<-  (dimnames(X)[[2]])
@@ -14,14 +13,14 @@ mvGSEA <- function(y,X,v=NULL,conf=NULL)
     confounders_column <- pmatch(conf, dimnames(X)[[2]])} #find which columns are confounders
   newX <- c()
   if ( !is.null(confounders_column)){
-    newX <- x[,-confounders_column]} #updated X, taking the confounders out
+    newX <- X[,-confounders_column]} #updated X, taking the confounders out
   
   
   #----------perform glm depending on the confounders
   if(is.null(conf)){
-    model <- edited_speedglm_L1(y~X, drop.unused.levels = FALSE)
+    model <- edited_speedglm_L1(y~X, drop.unused.levels = FALSE)}
     
-  }else{
+  if(!is.null(conf)){
     model <- edited_speedglm_L1(y~newX*X[,confounders_column], drop.unused.levels=FALSE)
     
   }
@@ -34,11 +33,11 @@ mvGSEA <- function(y,X,v=NULL,conf=NULL)
   }
   
   
-  wald <- aod::wald.test(b=coef(model), Sigma = vcov(model), Terms=selected_v_column) #need original speedglm package
+  wald <- aod::wald.test(b=coef.speedglm(model), Sigma = vcov.speedglm(model), Terms=selected_v_column) #need original speedglm package
   p.val <- wald$result$chi2[3]
 
   #predict
-  predict_model <- predict(model, data.frame(X), type = "response")
+  predict_model <- predict.speedglm(model, data.frame(X), type = "response")
   predict_model
   predict_model_fit <- ifelse(predict_model > 0.5,1,0)
   
@@ -64,10 +63,9 @@ mvGSEA <- function(y,X,v=NULL,conf=NULL)
   
   pred <- prediction(predict_model_fit, y) #need ROCR package
   perf <- performance(pred, "tpr", "fpr")
-  plot(perf)
+  #plot(perf)
   
-  #return a table
+  #return a row
   data.frame(p.val, fdr, oddsr)
-  
   
 }
