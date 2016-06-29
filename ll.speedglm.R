@@ -1,3 +1,5 @@
+#contains variety of functions necessary for the speedglm computation
+
 ll.speedglm <- function(family,aic.model,nvar){
   switch(family,
          binomial = -(aic.model-2 * nvar)/2,
