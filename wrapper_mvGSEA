@@ -11,7 +11,7 @@ wrapper_mvGSEA <- function(ys,X, v=NULL, conf = NULL)
   #tapply(y_L1[,1:10],rep(1:ncol(y_L1[,1:10]),each=nrow(y_L1[,1:10])),function(i)i)
   #lapply(y_L1[,1:10], function (y) {mvGSEA(y, X, v=NULL, conf=NULL)})
   
-  output <- apply(ys, 2, function(y) {mvGSEA(y, X, v=v, conf=conf)}) #this works, but it's not in parallel, and it doesn't return everything in a large table, it just returns everything separately
+  output <- apply(ys, 2, function(y) {mvGSEA(y, X, v=v, conf=conf)}) #this works, but it's not in parallel
   output_table <- Reduce(rbind, output)
   row.names(output_table) <- seq(1,ncol(ys))
   output_table
