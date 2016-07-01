@@ -1,10 +1,9 @@
 #uses the speedglm.wfit function, but slightly modified. unnecessary code is taken out
-
-edited_L1_speedglm.wfit <- function (y, X, intercept = TRUE, weights = NULL, row.chunk = NULL, start = NULL, etastart = NULL, mustart = NULL, 
-          offset = NULL, acc = 1e-08, maxit = 25, k = 2, sparselim = 0.9, 
-          camp = 0.01, eigendec = TRUE, tol.values = 1e-07, tol.vectors = 1e-07, 
-          tol.solve = .Machine$double.eps, sparse = NULL, method = c("eigen", 
-                                                                     "Cholesky", "qr"),trace = FALSE, ...) 
+edited_L1_speedglm.wfit <- function (y=y, X=X, intercept = TRUE, weights = NULL, row.chunk = NULL, start = NULL, etastart = NULL, mustart = NULL, 
+                                     offset = NULL, acc = 1e-08, maxit = 25, k = 2, sparselim = 0.9, 
+                                     camp = 0.01, eigendec = TRUE, tol.values = 1e-07, tol.vectors = 1e-07, 
+                                     tol.solve = .Machine$double.eps, sparse = NULL, method = c("eigen", 
+                                                                                                "Cholesky", "qr"),trace = FALSE, ...) 
 {
   family = binomial()
   nobs <- NROW(y)
@@ -78,10 +77,10 @@ edited_L1_speedglm.wfit <- function (y, X, intercept = TRUE, weights = NULL, row
       }
       beta <- start
     }
-   
-   
-      start <- solve(XTX, XTz, tol = tol.solve)
-
+    
+    
+    start <- solve(XTX, XTz, tol = tol.solve)
+    
     eta <- if (sparse) 
       drop(X %*% start)
     else drop(tcrossprod(X, t(start)))
@@ -107,12 +106,12 @@ edited_L1_speedglm.wfit <- function (y, X, intercept = TRUE, weights = NULL, row
   RSS <- sum(W * res * res)
   var_res <- RSS/dfr
   dispersion <- 1
-
   
-
-    coefficients <- rep(NA, nvar)
-    start <- as(start, "numeric")
-    coefficients[ok] <- start
+  
+  
+  coefficients <- rep(NA, nvar)
+  start <- as(start, "numeric")
+  coefficients[ok] <- start
   
   names(coefficients) <- col.names
   rval <- list(coefficients = coefficients, logLik = ll.nuovo, 
