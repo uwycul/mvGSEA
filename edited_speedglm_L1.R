@@ -1,18 +1,17 @@
 #uses the speedglm function, but edited so that unnecessary code is taken out
-
 edited_speedglm_L1 <- function (formula, data, family = binomial(), weights = NULL, 
                                 start = NULL, etastart = NULL, mustart = NULL, offset = NULL, 
                                 maxit = 25, k = 2, sparse = NULL, set.default = list(), trace = FALSE, 
                                 method = c("eigen", "Cholesky", "qr"), model = FALSE, y = FALSE, 
-                                fitted = FALSE, ...) 
+                                fitted = FALSE, drop.unused.levels = FALSE...) 
 {
-  data <- environment(formula)
+  data <- environment()
     call <- match.call()
   target <- y
   M <- match.call(expand.dots = FALSE)
   m <- match(c("formula", "data", "subset"), names(M), 0L)
   M <- M[c(1L, m)]
-  M$drop.unused.levels <- TRUE
+  M$drop.unused.levels <- FALSE
   M[[1L]] <- quote(stats::model.frame)
   M <- eval(M, parent.frame())
   y <- M[[1]]
