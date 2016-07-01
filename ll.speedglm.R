@@ -35,7 +35,7 @@ predict.speedlm <- function (object, newdata, na.action = na.pass, ...)
 {
   family=binomial()
   tt <- terms(object)
-  if (!inherits(object, c("speedlm", "speedglm"))) 
+  if (!inherits(object, c("speedlm", "edited_speedglm_L1"))) 
     warning("calling predict.speedlm(<fake-speedlm/speedglm-object>) ...")
   if (missing(newdata) || is.null(newdata)) {
     if (is.null(object$fitted.values)) 
