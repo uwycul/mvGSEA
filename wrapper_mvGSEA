@@ -1,7 +1,7 @@
 #this wrapper function will perform the mvGSEA function in parallel
 #inputs are: ys matrix, X matrix, v character vector, conf character vector, and mc integer
 
-july_1_wrapper_mvGSEA <- function(ys,X, v=NULL, conf=NULL, mc=4)
+wrapper_mvGSEA <- function(ys,X, v=NULL, conf=NULL, mc=4)
 {
   ys.list <- lapply(1:ncol(ys), function(i) ys[,i])
   # d <- data.frame(X, one_y=ys.list[[1]]);
