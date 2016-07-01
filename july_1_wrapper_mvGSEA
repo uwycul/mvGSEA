@@ -1,0 +1,26 @@
+#this wrapper function will perform the mvGSEA function in parallel
+#inputs are: ys matrix, X matrix, v character vector, conf character vector, and mc integer
+
+july_1_wrapper_mvGSEA <- function(ys,X, v=NULL, conf=NULL, mc=4)
+{
+  ys.list <- lapply(1:ncol(ys), function(i) ys[,i])
+  # d <- data.frame(X, one_y=ys.list[[1]]);
+  # e <- paste(colnames(X), collapse=' + '); 
+  #f <- formula(paste('one_y', e, sep=' ~ '));
+  
+  result <- parallel::mclapply(ys.list, function(y){
+    
+    #model <- glm(f, data=d, family=binomial);
+    # c();
+    mvGSEA(y,X=X,v=v,conf=conf)
+    
+    
+  }, mc.cores=mc);
+  
+  output_table <- Reduce(rbind, result)
+  row.names(output_table) <- seq(1,ncol(ys))
+  output_table
+  
+
+  
+}
