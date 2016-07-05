@@ -10,16 +10,9 @@ edited_wrapper_mvGSEA <- function(ys,X, v=NULL, conf=NULL, mc=4)
     mc=4
   }
   
-  #if there are no row names AND length of row(X) doesn't equal length of row(ys)
+  #if there are no row names 
   if (length(rownames(X))==0 | length(rownames(ys))==0) {
-    if (nrow(X) != nrow(ys)){
     stop("Must specify row names")
-    #if there are no row names BUT length of row(X) DOES equal length of row(ys), add in row names
-      #automatically assume that the rows of X and ys match up
-    }else {
-      rownames(X) <- seq(1, nrow(X))
-      rownames(ys) <- seq(1, nrow(ys))
-    }
   }
     
 
