@@ -27,11 +27,11 @@ edited_wrapper_mvGSEA <- function(ys,X, v=NULL, conf=NULL, mc=4)
    #for X
   X_indices <- pmatch(common, rownames(X)) #the indices that are common in the X matrix
   X_new <- X[X_indices,] #retrieving the common index VALUES
-  X_new_ <- X_new[order(as.integer(rownames(X_new))),]
+  X_new_ <- X_new[gtools::mixedsort(rownames(X_new), decreasing = FALSE),]
   #for ys
   ys_indices <- pmatch(common,rownames(ys))
   ys_new <- ys[ys_indices,]
-  ys_new_ <- ys_new[order(as.integer(rownames(ys_new))),]
+  ys_new_ <- ys_new[gtools::mixedsort(rownames(ys_new), decreasing = FALSE),]
   
   
       
