@@ -1,14 +1,51 @@
-wrapper_mvGSEA <- function(ys,X, v=NULL, conf=NULL, mc=4)
-{
-  ys.list <- lapply(1:ncol(ys), function(i) ys[,i])
-  # d <- data.frame(X, one_y=ys.list[[1]]);
-  # e <- paste(colnames(X), collapse=' + '); 
-  #f <- formula(paste('one_y', e, sep=' ~ '));
-  
-  result <- parallel::mclapply(ys.list, function(y){
-    
+#performs the mvGSEA function in parallel using multiple cores
+#included are the checkpoints, warnings and stop functions
 
-    mvGSEA(y,X=X,v=v,conf=conf)
+edited_wrapper_mvGSEA <- function(ys,X, v=NULL, conf=NULL, mc=4)
+{
+ # if (missing(y)) 
+  #  stop("Argument y is missing")
+
+  #if mc is some strange number, set it to the default
+  if (!is.element(mc,seq(from = 2, to = 64, by = 2))){
+    mc=4
+  }
+  
+  
+  #if number of rows of y and x don't match; if row names of y and x don't match, take out the ones that don't overlap, and then order the ones that match
+  common <- Reduce(intersect, list(rownames(X), rownames(ys))) #the common ones
+   #take out the ones that AREN'T the common ones
+   #for X
+  X_indices <- pmatch(common, rownames(X)) #the indices that are common in the X matrix
+  X_new <- X[X_indices,] #retrieving the common index VALUES
+  X_new_ <- X_new[order(as.integer(rownames(X_new))),]
+  #for ys
+  ys_indices <- pmatch(common,rownames(ys))
+  ys_new <- ys[ys_indices,]
+  ys_new_ <- ys_new[order(as.integer(rownames(ys_new))),]
+  
+  #if there are no row names AND length of row(X) doesn't equal length of row(ys)
+  #if (length(row(X)) != length(row(ys)) && (rownames(X)==NULL | rownames(ys)==NULL)){
+    
+    
+  #}
+  
+  
+  #if ys values aren't binary
+ ys_new_bin <- ys_new_[ys_new_ != 0 & ys_new_ != 1]
+ ys_new_bin
+ 
+ if (length(ys_new_bin) != 0) {
+ stop("ys must contain only binary values")
+}
+
+  
+ys.list <- lapply(1:ncol(ys_new_), function(i) ys[,i])
+
+ result <- parallel::mclapply(ys.list, function(y){
+    
+    
+    mvGSEA(y,X=X_new_,v=v,conf=conf)
     
     
   }, mc.cores=mc);
@@ -17,6 +54,5 @@ wrapper_mvGSEA <- function(ys,X, v=NULL, conf=NULL, mc=4)
   row.names(output_table) <- seq(1,ncol(ys))
   output_table
   
-
   
 }
