@@ -4,13 +4,14 @@
 edited_wrapper_mvGSEA <- function(ys,X, v=NULL, conf=NULL, mc=4)
 {
 
-
-  #if mc is some strange number, set it to the default
+#------------------------------------------------------------
+  #if mc is some strange number, set it to the default number of cores
  if (!is.element(mc,seq(from = 2, to = 64, by = 2))){
     mc=4
   }
-  
-  #if there are no row names 
+ #------------------------------------------------------
+   
+  #if there are no row names, put in a warning to specify row names
   if (length(rownames(X))==0 | length(rownames(ys))==0) {
     stop("Must specify row names")
   }
@@ -19,20 +20,22 @@ edited_wrapper_mvGSEA <- function(ys,X, v=NULL, conf=NULL, mc=4)
   #if row names of y and x don't match, take out the ones that don't overlap, and then order the ones that match
   common <- Reduce(intersect, list(rownames(X), rownames(ys))) #the common ones
   
-  #if there aren't any common row names
+ #--------------------------------------
+   #if there aren't any common row names
   if (length(common)==0)
     stop("Row names of X and ys don't match")
   
+  #-------------------------------------------------
    #take out the ones that AREN'T the common ones
-   #for X
+   #for X, taking out the non-overlapping row names-----
   X_indices <- pmatch(common, rownames(X)) #the indices that are common in the X matrix
   X_new <- X[X_indices,] #retrieving the common index VALUES
   X_new_ <- X_new[gtools::mixedsort(rownames(X_new), decreasing = FALSE),]
-  #for ys
+  #for ys, taking out the non-overlapping row names-----
   ys_indices <- pmatch(common,rownames(ys))
   ys_new <- ys[ys_indices,]
   ys_new_ <- ys_new[gtools::mixedsort(rownames(ys_new), decreasing = FALSE),]
-  
+  #-----------------------------------------
   
       
   #if ys values aren't binary
@@ -42,6 +45,7 @@ edited_wrapper_mvGSEA <- function(ys,X, v=NULL, conf=NULL, mc=4)
  stop("ys must contain only binary values")
 }
 
+ #----------------------------------------
   
 ys.list <- lapply(1:ncol(ys_new_), function(i) ys[,i])
 
@@ -52,10 +56,12 @@ result <- parallel::mclapply(ys.list, function(y){
     
     
   }, mc.cores=mc);
-  
+ 
+#----------------------------------------- 
   output_table <- Reduce(rbind, result)
   row.names(output_table) <- seq(1,ncol(ys))
-  output_table
+  #return a table with each column in ys as a row
+  output_table 
   
   
 }
