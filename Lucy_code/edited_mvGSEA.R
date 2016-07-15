@@ -50,24 +50,26 @@ mvGSEA <- function(y,X,v_col,conf_col, prediction_cutoff, f, d, partial)
 
 
   #predict
- predict_model <- predict.speedglm(model, data.frame(d), type = "response")
- predict_model_fit <- ifelse(predict_model > prediction_cutoff,1,0) #might change the 0.5 cutoff based on the balance of categories
+ predict_model <- as.vector(predict.speedglm(model, data.frame(d), type = "response"))
+ predict_model_fit <- as.integer(predict_model>prediction_cutoff) #might change the 0.5 cutoff based on the balance of categories
+  
+  #make a contingency table and calculate odds ratio
+ y_ <- factor(y, levels=c(0,1))
+ predictions <- factor(predict_model_fit, levels = c(0,1))
+ 
+ contingency_table <- xtabs(~y_+predictions, drop.unused.levels=FALSE)
+ contingency_table
   
   
-  #odds ratio
-  predict_model_fit_ <- ifelse(predict_model_fit==1, "Yes", "No")
-data_predict <- factor(predict_model_fit_, levels = c("Yes", "No"))
- y_ <- ifelse(y==1, "Yes", "No")
-  data_y_ <- factor(y_, levels = c("Yes", "No"))
-  contingency_table <- table(data_predict, data_y_)
-  
-   oddsr <- mosaic::oddsRatio(contingency_table, conf.level = 0.95)
-  
-  TP <- contingency_table[1,1]
-  FP <- contingency_table[1,2]
+  TP <- contingency_table[2,2]
+FP <- contingency_table[1,2]
   FN <- contingency_table[2,1]
-  TN <- contingency_table[2,2]
+  TN <- contingency_table[1,1]
   
+  oddsratio<- fisher.test(contingency_table)$estimate
+ 
+
+  oddsratio
   
   #AUC from ROC
   
@@ -75,12 +77,11 @@ data_predict <- factor(predict_model_fit_, levels = c("Yes", "No"))
   prf <- ROCR::performance(pr, measure="tpr", x.measure="fpr")
   auc <- ROCR::performance(pr, measure="auc")
   auc <- auc@y.values[[1]]
-  
- 
+
  
  
   #return a row
- data.frame(pval_2, oddsr, auc, TP, FP, FN, TN)
+data.frame(pval_2, oddsratio, auc, TP, FP, FN, TN)
 
   
 }
