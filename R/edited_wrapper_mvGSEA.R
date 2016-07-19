@@ -1,7 +1,7 @@
 #included are the checkpoints, warnings and stop functions
 #performs the mvGSEA function in parallel
 
-edited_wrapper_mvGSEA <- function(ys,X, v, conf=NULL, mc=4, prediction_cutoff=0.5)
+edited_wrapper_mvGSEA <- function(ys,X, v, conf=NULL, mc=4, prediction_method=c("sensitivity", "custom"),prediction_cutoff=0.005)
 {
   
   #check that v and conf don't overlap
@@ -128,7 +128,7 @@ if (!is.null(confounders_columns)){ #if there ARE CONFOUNDERS
 result <- parallel::mclapply(ys.list, function(y){
     
   d$one_y <- y
-    mvGSEA(y,X=X_new_,v_col=selected_v_columns,conf_col=confounders_columns, prediction_cutoff=prediction_cutoff, f=f, d=d, partial=partial)
+    mvGSEA(y,X=X_new_,v_col=selected_v_columns,conf_col=confounders_columns, prediction_method=prediction_method,prediction_cutoff=prediction_cutoff, f=f, d=d, partial=partial)
     
     
   }, mc.cores=mc);
@@ -138,6 +138,7 @@ result <- parallel::mclapply(ys.list, function(y){
  output_table <- Reduce(rbind, result)
   row.names(output_table) <- colnames(ys)
   #return a table with each column in ys as a row
-  output_table 
+ output_table 
+
 
 }
