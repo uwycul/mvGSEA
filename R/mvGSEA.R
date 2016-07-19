@@ -1,7 +1,7 @@
 #uses the edited_speed_glm_L1 and edited_L1_speedglm.wfit to perform a Wald Test and to predict the outcome
 #will return pval and odds ratio as a data frame
 
-mvGSEA <- function(y,X,v_col,conf_col, prediction_cutoff, f, d, partial)
+mvGSEA <- function(y,X,v_col,conf_col, prediction_method,prediction_cutoff, f, d, partial)
 {
 
   #v is now a matrix of only the variables of interest (called v_col)
@@ -43,22 +43,34 @@ mvGSEA <- function(y,X,v_col,conf_col, prediction_cutoff, f, d, partial)
   #anova(nullmodel, model, test="Chisq")
   q_2 <- 2*abs(model$logLik-nullmodel$logLik)
   df_2 <- abs(model$df-nullmodel$df)
-  pval_2 <- pchisq(q_2, df_2, lower.tail=FALSE) #overall pvalue from anova
+  pval_ <- pchisq(q_2, df_2, lower.tail=FALSE) #overall pvalue from anova
   
   
 
 
 
-  #predict
+  #prediction
  predict_model <- as.vector(predict.speedglm(model, data.frame(d), type = "response"))
+ 
+ #if prediction_method="sensitivity", rounding
+ if (prediction_method=="sensitivity"){
+   sorted_predict_model <- sort(predict_model, decreasing=FALSE)
+   prediction_sensitivity_cutoff <- sorted_predict_model[as.integer(9*length(sorted_predict_model)/10)] #retrieving the indexed value at 90th percentile
+ predict_model_fit <- as.integer(predict_model>prediction_sensitivity_cutoff)
+ 
+   
+   #if prediction_method="custom"  , rounding
+ } else if (prediction_method=="custom"){
  predict_model_fit <- as.integer(predict_model>prediction_cutoff) #might change the 0.5 cutoff based on the balance of categories
-  
+ } 
+
+ 
   #make a contingency table and calculate odds ratio
  y_ <- factor(y, levels=c(0,1))
  predictions <- factor(predict_model_fit, levels = c(0,1))
  
  contingency_table <- xtabs(~y_+predictions, drop.unused.levels=FALSE)
- contingency_table
+
   
   
   TP <- contingency_table[2,2]
@@ -67,21 +79,19 @@ FP <- contingency_table[1,2]
   TN <- contingency_table[1,1]
   
   oddsratio<- fisher.test(contingency_table)$estimate
- 
 
-  oddsratio
   
   #AUC from ROC
   
-  pr <- ROCR::prediction(predict_model_fit, y) #need ROCR package
-  prf <- ROCR::performance(pr, measure="tpr", x.measure="fpr")
-  auc <- ROCR::performance(pr, measure="auc")
+ pr <- ROCR::prediction(predict_model_fit, y) #need ROCR package
+ prf <- ROCR::performance(pr, measure="tpr", x.measure="fpr")
+ auc <- ROCR::performance(pr, measure="auc")
   auc <- auc@y.values[[1]]
 
  
  
   #return a row
-data.frame(pval_2, oddsratio, auc, TP, FP, FN, TN)
+data.frame(pval_, oddsratio, auc, TP, FP, FN, TN)
 
   
 }
