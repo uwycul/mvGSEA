@@ -13,7 +13,7 @@ Random variables with increasing positives, approximately from 0.1 to 10%, not p
 
 ### F0 to F4
 
-Predictable correspondingly by confoundering variables X:C0-C1. Some of them can also be predicted by X:V1-V6, but removing the confounders will reduce their predictivity. 
+Predictable correspondingly by confoundering variables X:C0-C4. Some of them can also be predicted by X:V1-V6, but removing the confounders will reduce their predictivity. 
 
 
 ## X variables
