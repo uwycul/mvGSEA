@@ -51,12 +51,14 @@ mvGSEA <- function(y,X,v_col,conf_col, prediction_method,prediction_cutoff, f, d
 
   #prediction
  predict_model <- as.vector(predict.speedglm(model, data.frame(d), type = "response"))
+ones_indices <- which(y==1)
+predict_model_ones <- predict_model[ones_indices]
  
  #if prediction_method="sensitivity", rounding
  if (prediction_method=="sensitivity"){
-   sorted_predict_model <- sort(predict_model, decreasing=FALSE)
-   prediction_sensitivity_cutoff <- sorted_predict_model[as.integer(9*length(sorted_predict_model)/10)] #retrieving the indexed value at 90th percentile
- predict_model_fit <- as.integer(predict_model>prediction_sensitivity_cutoff)
+   sorted_predict_model <- sort(predict_model_ones, decreasing=FALSE)
+ prediction_sensitivity_cutoff <- sorted_predict_model[as.integer(9*length(sorted_predict_model)/10)] #retrieving the indexed value at 90th percentile
+predict_model_fit <- as.integer(predict_model>prediction_sensitivity_cutoff)
  
    
    #if prediction_method="custom"  , rounding
@@ -83,7 +85,7 @@ FP <- contingency_table[1,2]
   
   #AUC from ROC
   
- pr <- ROCR::prediction(predict_model_fit, y) #need ROCR package
+pr <- ROCR::prediction(predict_model_fit, y) #need ROCR package
  prf <- ROCR::performance(pr, measure="tpr", x.measure="fpr")
  auc <- ROCR::performance(pr, measure="auc")
   auc <- auc@y.values[[1]]
