@@ -43,7 +43,7 @@ if (prediction_method=="sensitivity"){
   ones_indices <- which(y==1)
    predict_model_ones <- predict_model[ones_indices]
   sorted_predict_model <- sort(predict_model_ones, decreasing=FALSE)
-prediction_sensitivity_cutoff <- sorted_predict_model[as.integer(.9*length(sorted_predict_model))] #retrieving the indexed value at 90th percentile
+prediction_sensitivity_cutoff <- sorted_predict_model[as.integer(.1*length(sorted_predict_model))] #retrieving the indexed value at 90th percentile
 predict_model_fit <- as.integer(predict_model>prediction_sensitivity_cutoff)
  } else if (prediction_method=="threshold"){
    prediction_threshold_cutoff <- methods[1]
