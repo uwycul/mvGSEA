@@ -1,7 +1,7 @@
 #included are the checkpoints, warnings and stop functions
 #performs the mvGSEA function in parallel
 
-edited_wrapper_mvGSEA <- function(ys,X, v, conf=NULL, mc=4, prediction_method=c("sensitivity", "custom"),prediction_cutoff=0.005)
+edited_wrapper_mvGSEA <- function(ys,X, v, conf=NULL, mc=4, prediction_method=c("threshold", "specificity", "sensitivity", "custom"),prediction_cutoff=0.05)
 {
   
   #check that v and conf don't overlap
@@ -37,7 +37,7 @@ edited_wrapper_mvGSEA <- function(ys,X, v, conf=NULL, mc=4, prediction_method=c(
     }
   } else{ #if there ARE row names
   #if row names of y and x don't match, take out the ones that don't overlap, and then order the ones that match
-  common <- Reduce(intersect, list(rownames(X), rownames(ys))) #the common ones
+  common <- Reduce(intersect, list(rownames(X), rownames(ys))) #the common rownames between ys and X
   
  #--------------------------------------
    #if there aren't any COMMON row names
@@ -88,41 +88,43 @@ edited_wrapper_mvGSEA <- function(ys,X, v, conf=NULL, mc=4, prediction_method=c(
   
   #extracting the v columns
   selected_v_indices <- pmatch(v, dimnames(X_new_)[[2]])
+  
  selected_v_columns <- X_new_[,selected_v_indices, drop=FALSE]
   
   #extracing the confounder columns
-  confounders_indices <- c()
-  confounders_columns <- c()
+ confounders_indices <- c()
+ confounders_columns <- c()
   if( !is.null(conf)){ #if there ARE confounders
   confounders_indices <- pmatch(conf, dimnames(X_new_)[[2]]) #find which columns are confounders
-    confounders_columns <- X_new_[,confounders_indices, drop=FALSE]}#confounder column(s)
-  
+   confounders_columns <- X_new_[,confounders_indices, drop=FALSE]}#confounder column(s)
+
  #----------------------------------------
   
 ys.list <- lapply(1:ncol(ys_new_), function(i) ys_new_[,i])
 
 if (is.null(confounders_columns)){
 d <- data.frame(selected_v_columns, one_y = ys.list[[1]])
-if (length(colnames(selected_v_columns)) > 1){
-v_prod <- paste(colnames(selected_v_columns), collapse=' * ')
-} else{
+  if (length(colnames(selected_v_columns)) > 1){
+  v_prod <- paste(colnames(selected_v_columns), collapse=' * ')
+  } else{
   v_prod <- colnames(selected_v_columns)
 }
 f <- formula(paste('one_y', v_prod, sep=' ~ '))
 partial <- NULL
 } 
+
+
 if (!is.null(confounders_columns)){ #if there ARE CONFOUNDERS
  d <- data.frame(selected_v_columns, confounders_columns, one_y = ys.list[[1]])
   v_prod <- paste(colnames(selected_v_columns), collapse=' * ')
-  if (length(colnames(confounders_columns))>1){
-    conf_prod <- paste(colnames(confounders_columns), collapse= '*') 
+ if (length(colnames(confounders_columns))>1){
+   conf_prod <- paste(colnames(confounders_columns), collapse= '*') 
   } else{ #if there is only one confounder
     conf_prod <- colnames(confounders_columns)
   }
   f <- formula(paste('one_y', paste(v_prod,conf_prod, sep='+'), sep=' ~ '))
   partial <- formula(paste('one_y', conf_prod, sep='~'))
 }
-
 
 
 result <- parallel::mclapply(ys.list, function(y){
@@ -135,10 +137,10 @@ result <- parallel::mclapply(ys.list, function(y){
 
 
 #----------------------------------------- 
- output_table <- Reduce(rbind, result)
+output_table <- Reduce(rbind, result)
   row.names(output_table) <- colnames(ys)
   #return a table with each column in ys as a row
- output_table 
+output_table 
 
 
 }
