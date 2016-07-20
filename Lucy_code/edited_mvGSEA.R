@@ -36,28 +36,19 @@ mvGSEA <- function(y,X,v_col,conf_col, prediction_method,prediction_cutoff, f, d
   #prediction
  predict_model <- as.vector(predict.speedglm(model, data.frame(d), type = "response"))
  roc <- pROC::roc(y, predict_model)
- methods <- coords(roc, "best", ret=c("threshold", "specificity", "sensitivity"), best.method="youden")
+ methods <- coords(roc, "best", ret=c("threshold"), best.method="youden")
 
- 
  #if prediction_method="sensitivity", determining cutoff
 if (prediction_method=="sensitivity"){
-  prediction_sensitivity_cutoff <- methods[3]
-  predict_model_fit <- as.integer(predict_model>prediction_sensitivity_cutoff)
-  #ones_indices <- which(y==1)
-   #predict_model_ones <- predict_model[ones_indices]
-  # sorted_predict_model <- sort(predict_model_ones, decreasing=FALSE)
-#prediction_sensitivity_cutoff <- sorted_predict_model[as.integer(.9*length(sorted_predict_model))] #retrieving the indexed value at 90th percentile
-#predict_model_fit <- as.integer(predict_model>prediction_sensitivity_cutoff)
+  ones_indices <- which(y==1)
+   predict_model_ones <- predict_model[ones_indices]
+  sorted_predict_model <- sort(predict_model_ones, decreasing=FALSE)
+prediction_sensitivity_cutoff <- sorted_predict_model[as.integer(.9*length(sorted_predict_model))] #retrieving the indexed value at 90th percentile
+predict_model_fit <- as.integer(predict_model>prediction_sensitivity_cutoff)
  } else if (prediction_method=="threshold"){
    prediction_threshold_cutoff <- methods[1]
    predict_model_fit <- as.integer(predict_model>prediction_threshold_cutoff)
- } else if (prediction_method=="specificity"){
-   prediction_specificity_cutoff <- methods[2]
-   predict_model_fit <- as.integer(predict_model>prediction_specificity_cutoff)
- } else if (prediction_method=="custom"){
-   predict_model_fit <- as.integer(predict_model>prediction_cutoff) #might change the 0.5 cutoff based on the balance of categories
-} 
-
+ } 
  
   #make a contingency table and calculate odds ratio
 y_ <- factor(y, levels=c(0,1))
@@ -69,8 +60,8 @@ y_ <- factor(y, levels=c(0,1))
   
  TP <- contingency_table[2,2]
 FP <- contingency_table[1,2]
-  FN <- contingency_table[2,1]
-  TN <- contingency_table[1,1]
+FN <- contingency_table[2,1]
+TN <- contingency_table[1,1]
   
   oddsratio<- fisher.test(contingency_table)$estimate
 
@@ -86,7 +77,6 @@ pr <- ROCR::prediction(predict_model_fit, y) #need ROCR package
  
   #return a row
  data.frame(pval, oddsratio, auc, TP, FP, FN, TN)
-
 
 
   
