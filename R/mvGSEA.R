@@ -13,7 +13,7 @@ mvGSEA <- function(y,X,v_col,conf_col, prediction_method,prediction_cutoff, f, d
 
   if(is.null(conf_col)){  #NO CONFOUNDERS
     model <- edited_speedglm_L1(f, data=d, drop.unused.levels=FALSE)
-    nullmodel <- edited_speedglm_L1(y~1, drop.unused.levels=FALSE)
+    partialmodel <- edited_speedglm_L1(y~1, drop.unused.levels=FALSE) #NULL model
   }
   
   ###-------------there ARE confounders-----------
@@ -22,61 +22,52 @@ mvGSEA <- function(y,X,v_col,conf_col, prediction_method,prediction_cutoff, f, d
   ###-----PARTIAL: prod(conf)
   
   if(!is.null(conf_col)){
-    fullmodel <- edited_speedglm_L1(f,data=d, drop.unused.levels=FALSE )
-    partialmodel <- edited_speedglm_L1(partial, data=d, drop.unused.levels=FALSE)
-    nullmodel <- edited_speedglm_L1(y~1, drop.unused.levels=FALSE)
-    #next, perform likelihood ratio test to pick the full or partial model to use (NOTE: the lrtest function doesn't work with the speedglm function (only glm), so I hacked the code and made my own test that is compatile with speedglm)
-    q <- 2*abs(fullmodel$logLik-partialmodel$logLik)
-    df <- abs(fullmodel$df-partialmodel$df)
-    pval <- pchisq(q, df, lower.tail=FALSE)
-  if (pval >0.05){
-    model <- fullmodel
-  } else{
-    model <- partialmodel
+    model <- edited_speedglm_L1(f,data=d, drop.unused.levels=FALSE );# 
+    partialmodel <- edited_speedglm_L1(partial, data=d, drop.unused.levels=FALSE); 
   }
-  }
- 
   
-  #---------------------------------------------------------------------------
-#comparing model with null model
-  #perform chisq----get overall pvalue
-  #anova(nullmodel, model, test="Chisq")
-  q_2 <- 2*abs(model$logLik-nullmodel$logLik)
-  df_2 <- abs(model$df-nullmodel$df)
-  pval_ <- pchisq(q_2, df_2, lower.tail=FALSE) #overall pvalue from anova
-  
-  
+  q <- 2*abs(model$logLik-partialmodel$logLik)
+  df <- abs(model$df-partialmodel$df)
+  pval <- pchisq(q, df, lower.tail=FALSE)
 
+  #---------------------------------------------------------------------------
 
 
   #prediction
  predict_model <- as.vector(predict.speedglm(model, data.frame(d), type = "response"))
+ roc <- pROC::roc(y, predict_model)
+ methods <- coords(roc, "best", ret=c("threshold", "specificity", "sensitivity"), best.method="youden")
 
  
  #if prediction_method="sensitivity", determining cutoff
- if (prediction_method=="sensitivity"){
-   ones_indices <- which(y==1)
-   predict_model_ones <- predict_model[ones_indices]
-   sorted_predict_model <- sort(predict_model_ones, decreasing=FALSE)
- prediction_sensitivity_cutoff <- sorted_predict_model[as.integer(9*length(sorted_predict_model)/10)] #retrieving the indexed value at 90th percentile
-predict_model_fit <- as.integer(predict_model>prediction_sensitivity_cutoff)
- 
-   
-   #if prediction_method="custom"  , determining cutoff
+if (prediction_method=="sensitivity"){
+  prediction_sensitivity_cutoff <- methods[3]
+  predict_model_fit <- as.integer(predict_model>prediction_sensitivity_cutoff)
+  #ones_indices <- which(y==1)
+   #predict_model_ones <- predict_model[ones_indices]
+  # sorted_predict_model <- sort(predict_model_ones, decreasing=FALSE)
+#prediction_sensitivity_cutoff <- sorted_predict_model[as.integer(.9*length(sorted_predict_model))] #retrieving the indexed value at 90th percentile
+#predict_model_fit <- as.integer(predict_model>prediction_sensitivity_cutoff)
+ } else if (prediction_method=="threshold"){
+   prediction_threshold_cutoff <- methods[1]
+   predict_model_fit <- as.integer(predict_model>prediction_threshold_cutoff)
+ } else if (prediction_method=="specificity"){
+   prediction_specificity_cutoff <- methods[2]
+   predict_model_fit <- as.integer(predict_model>prediction_specificity_cutoff)
  } else if (prediction_method=="custom"){
- predict_model_fit <- as.integer(predict_model>prediction_cutoff) #might change the 0.5 cutoff based on the balance of categories
- } 
+   predict_model_fit <- as.integer(predict_model>prediction_cutoff) #might change the 0.5 cutoff based on the balance of categories
+} 
 
  
   #make a contingency table and calculate odds ratio
- y_ <- factor(y, levels=c(0,1))
+y_ <- factor(y, levels=c(0,1))
  predictions <- factor(predict_model_fit, levels = c(0,1))
  
  contingency_table <- xtabs(~y_+predictions, drop.unused.levels=FALSE)
 
   
   
-  TP <- contingency_table[2,2]
+ TP <- contingency_table[2,2]
 FP <- contingency_table[1,2]
   FN <- contingency_table[2,1]
   TN <- contingency_table[1,1]
@@ -89,12 +80,14 @@ FP <- contingency_table[1,2]
 pr <- ROCR::prediction(predict_model_fit, y) #need ROCR package
  prf <- ROCR::performance(pr, measure="tpr", x.measure="fpr")
  auc <- ROCR::performance(pr, measure="auc")
-  auc <- auc@y.values[[1]]
+ auc <- auc@y.values[[1]]
 
  
  
   #return a row
-data.frame(pval_, oddsratio, auc, TP, FP, FN, TN)
+ data.frame(pval, oddsratio, auc, TP, FP, FN, TN)
+
+
 
   
 }
