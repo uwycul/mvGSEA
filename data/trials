@@ -2,6 +2,11 @@ sim <- readRDS("simulation.rds")
 x_L2 <- sim$X
 y_L2 <- sim$Y
 
+#note: package installations needed:
+#gtools
+#library("parallel")
+#ROCR
+#pROC
 
 #Y's 1:10--Predictable variable by X:V1-V6, with increasing positives, from 50 to 500
 test_1A <- edited_wrapper_mvGSEA(y_L2[,1:10], x_L2, v=c("V1"), conf=c("C0"), prediction_method="sensitivity")
