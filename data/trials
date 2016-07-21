@@ -1,4 +1,4 @@
-sim <- readRDS("_simulation.rds")
+sim <- readRDS("simulation.rds")
 x_L2 <- sim$X
 y_L2 <- sim$Y
 
