@@ -1,0 +1,115 @@
+sim <- readRDS("_simulation.rds")
+x_L2 <- sim$X
+y_L2 <- sim$Y
+
+
+#Y's 1:10--Predictable variable by X:V1-V6, with increasing positives, from 50 to 500
+test_1A <- edited_wrapper_mvGSEA(y_L2[,1:10], x_L2, v=c("V1"), conf=c("C0"), prediction_method="sensitivity")
+test_1B <- edited_wrapper_mvGSEA(y_L2[,1:10], x_L2, v=c("V1"), prediction_method="sensitivity")
+##----testing if there are diffs depending on whether the confounders are present or not-----
+wilcox.test(test_1A$pval,test_1B$pval) # pvalue is 0.9118--pvalues are the same
+wilcox.test(test_1A$oddsratio, test_1B$oddsratio) #odds ratio are the same (p=0.9397)
+
+##using confounder C1
+test_1A1 <- edited_wrapper_mvGSEA(y_L2[,1:10], x_L2, v=c("V1"), conf=c("C1"), prediction_method="sensitivity")
+test_1B1 <- edited_wrapper_mvGSEA(y_L2[,1:10], x_L2, v=c("V1"), prediction_method="sensitivity")
+wilcox.test(test_1A1$pval,test_1B1$pval) # pvalue is 0.7394--pvalues are the same
+wilcox.test(test_1A1$oddsratio, test_1B1$oddsratio) #pvalue is 0.7394--oddsr are the same
+
+##using confounder C2
+test_1A2 <- edited_wrapper_mvGSEA(y_L2[,1:10], x_L2, v=c("V1"), conf=c("C2"), prediction_method="sensitivity")
+test_1B2 <- edited_wrapper_mvGSEA(y_L2[,1:10], x_L2, v=c("V1"), prediction_method="sensitivity")
+wilcox.test(test_1A2$pval,test_1B2$pval) # pvalue is 0.07526--pvalues are the same
+wilcox.test(test_1A2$oddsratio, test_1B2$oddsratio)  #pvalue is 0.6305
+
+##using confounder C3
+test_1A3 <- edited_wrapper_mvGSEA(y_L2[,1:10], x_L2, v=c("V1"), conf=c("C3"), prediction_method="sensitivity")
+test_1B3 <- edited_wrapper_mvGSEA(y_L2[,1:10], x_L2, v=c("V1"), prediction_method="sensitivity")
+wilcox.test(test_1A3$pval,test_1B3$pval) # pvalue is 2.165e-05-pvalues are different
+wilcox.test(test_1A3$oddsratio, test_1B3$oddsratio)  #pvalue is 0.8534--odds ratio are same
+
+test_1A3t <- edited_wrapper_mvGSEA(y_L2[,1:10], x_L2, v=c("V1"), conf=c("C3"), prediction_method="threshold")
+test_1B3t <- edited_wrapper_mvGSEA(y_L2[,1:10], x_L2, v=c("V1"), prediction_method="threshold")
+wilcox.test(test_1A3t$pval,test_1B3t$pval) # pvalue is 2.165e-05-pvalues are different
+wilcox.test(test_1A3t$oddsratio, test_1B3t$oddsratio)  #pvalue is 0.00105--odds ratio are diff
+
+
+#--------
+##try and use the threshold method for cutoff
+#Y's 11-14 (F)-Predictable correspondingly by confounding variables X:C0-C1. Some of them can also be predicted by X:V1-V6, but removing the confounders will reduce their predictivity.
+test_2A <- edited_wrapper_mvGSEA(y_L2[,11:14, drop=FALSE], x_L2, v=c("V1"), conf=c("C0"), prediction_method="threshold")
+test_2B <- edited_wrapper_mvGSEA(y_L2[,11:14, drop=FALSE], x_L2, v=c("V1"), prediction_method="threshold")
+wilcox.test(test_2A$pval, test_2B$pval) #pval is 1
+wilcox.test(test_2A$oddsratio, test_2B$oddsratio) #pvalue is 0.8857
+
+#using C3
+test_2A3 <- edited_wrapper_mvGSEA(y_L2[,11:14, drop=FALSE], x_L2, v=c("V1"), conf=c("C3"), prediction_method="sensitivity")
+test_2B3 <- edited_wrapper_mvGSEA(y_L2[,11:14, drop=FALSE], x_L2, v=c("V1"), prediction_method="sensitivity")
+wilcox.test(test_2A3$pval, test_2B3$pval) #pval is 0.2
+wilcox.test(test_2A3$oddsratio, test_2B3$oddsratio) #pvalue is 0.8857
+wilcox.test(test_2A3$auc, test_2A3$auc) #pvalue =1
+
+#-----------
+
+#Y's 15:114 (R)-Random variables 15:114 with increasing positives, approximately from 0.1 to 10%, not predictable by any X variables
+test_3A <- edited_wrapper_mvGSEA(y_L2[,15:114], x_L2, v=c("V1"), conf=c("C0"), prediction_method="sensitivity")
+test_3B <- edited_wrapper_mvGSEA(y_L2[,15:114], x_L2, v=c("V1"), prediction_method="sensitivity")
+test_3Aa <- edited_wrapper_mvGSEA(y_L2[,15:114], x_L2, v=c("V2"), conf=c("C0"), prediction_method="sensitivity")
+#(note: the pvalues for each y-column appear to be insignificant: keep the null hypothesis that x and y are independent)
+##------testing if there are diffs depending on whether the confounders are present or not------
+wilcox.test(test_3A$pval, test_3B$pval) #pvalue is 0.9795--the pvalues are the same
+wilcox.test(test_3A$oddsratio, test_3B$oddsratio)#pvalue is 0.04108--the odds ratios are DIFFERENT
+wilcox.test(test_3A$auc, test_3B$auc) #pvalue is 0.04564--the auc's are DIFFERENT
+
+
+
+
+
+test_3A3 <- edited_wrapper_mvGSEA(y_L2[,15:114], x_L2, v=c("V1"), conf=c("C3"), prediction_method="sensitivity")
+test_3B3 <- edited_wrapper_mvGSEA(y_L2[,15:114], x_L2, v=c("V1"), prediction_method="sensitivity")
+wilcox.test(test_3A3$oddsratio, test_3B3$oddsratio)#pvalue is 0.06143--the odds ratios are not different
+wilcox.test(test_3A3$auc, test_3B3$auc) #pvalue is 0.05909--the auc's are not different
+
+
+#--------
+#X:F1 to F3-- Highly correlated to confounders C1 to C3, respectively. Can predict Y10 as a single predictor variable. However, removing their correlation to corresponding confounders will get rid of the predictivity. In other words, there will be false positive results if the confounder is not included in the model.
+
+test_4A <-edited_wrapper_mvGSEA(y_L2[,10, drop=FALSE], x_L2, v=c("F1"), conf=c("C1"), prediction_method="threshold")
+test_4B <- edited_wrapper_mvGSEA(y_L2[,10, drop=FALSE], x_L2, v=c("F1"), prediction_method="threshold")
+#can't to tests to compare if diff
+#but returning them one by one, test_4A works better than test_4B
+
+#changing the cutoff
+test_4Ac <-edited_wrapper_mvGSEA(y_L2[,1:10], x_L2, v=c("F1", "F2", "F3"), conf=c("C0", "C1", "C2", "C3"), prediction_method="custom", prediction_cutoff=0.05)
+test_4Bc <- edited_wrapper_mvGSEA(y_L2[,1:10], x_L2, v=c("F1", "F2", "F3"), prediction_method="custom", prediction_cutoff=0.05)
+wilcox.test(test_4Ac$pval, test_4Bc$pval)#pval is 1.083e-05, the pvalues are the same
+wilcox.test(test_4Ac$auc, test_4Bc$auc) #pval is 0.341, the aucs are same
+
+
+#X: N1 and W1--N1 is a confounder highly predictive of Y10, but impair the predictivity of the predictor variable W1. Removing confounding effect of N1 will increase the predictivity of W1.
+test_5A <-edited_wrapper_mvGSEA(y_L2[,10, drop=FALSE], x_L2, v=c("W1"), conf=c("N1"), prediction_method="threshold")
+test_5B <- edited_wrapper_mvGSEA(y_L2[,10, drop=FALSE], x_L2, v=c("W1"), prediction_method="threshold")
+
+#-----
+#-------------------------------comparing--------------------------
+
+#comparing test1A and test2A--true Y's with confounding Y's
+##pval
+wilcox.test(test_1A$pval, test_2A$pval) #pval=0.8392---the pvalues are NOT different
+##odds ratio
+wilcox.test(test_1A$oddsratio, test_2A$oddsratio) #pval=0.1419--the odds ratio are NOT different
+
+#comparing test1A and test3A--true Y's with random Y's
+##pval
+wilcox.test(test_1A$pval, test_3A$pval) #4.422e-06---the pvalues ARE different
+##odds ratio
+wilcox.test(test_1A$oddsratio, test_3A$oddsratio) #0.01519--the odds ratio are different
+
+#comparing test2A and test3A--confounding Y's with random Y's
+##pval
+t.test(test_2A$pval, test_3A$pval) #pval < 2.2e-16---the pvalues ARE different
+##odds ratio
+t.test(test_2A$oddsratio, test_3A$oddsratio) #pval = 0.0001059--the odds ratio ARE different
+
+
+
